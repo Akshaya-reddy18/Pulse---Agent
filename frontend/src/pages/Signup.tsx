@@ -1,9 +1,36 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Mail, Lock, User, ArrowLeft, Droplets } from "lucide-react";
+import { signup } from "@/services/auth.service";
+import { toast } from "sonner";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      await signup(email, password);
+      toast.success("Account created successfully!");
+      // Optionally update user profile with full name here
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -69,8 +96,8 @@ const Signup = () => {
             </p>
           </div>
 
-          {/* Signup form - UI only */}
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          {/* Signup form */}
+          <form className="space-y-5" onSubmit={handleSignup}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Full Name
@@ -79,8 +106,11 @@ const Signup = () => {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter your full name"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
@@ -93,8 +123,11 @@ const Signup = () => {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
@@ -107,8 +140,12 @@ const Signup = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a password"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
+                  minLength={8}
                 />
               </div>
               <p className="text-xs text-muted-foreground">
@@ -124,8 +161,11 @@ const Signup = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your password"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
@@ -135,6 +175,7 @@ const Signup = () => {
                 type="checkbox" 
                 id="terms"
                 className="w-4 h-4 mt-0.5 rounded border-input text-primary focus:ring-primary"
+                required
               />
               <label htmlFor="terms" className="text-sm text-muted-foreground">
                 I agree to the{" "}
@@ -148,8 +189,8 @@ const Signup = () => {
               </label>
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full">
-              Create Account
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 

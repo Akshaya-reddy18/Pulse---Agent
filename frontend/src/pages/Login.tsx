@@ -1,9 +1,29 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, Mail, Lock, ArrowLeft } from "lucide-react";
+import { login } from "@/services/auth.service";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await login(email, password);
+      toast.success("Successfully logged in!");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to login");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -59,8 +79,8 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Login form - UI only */}
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          {/* Login form */}
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Email
@@ -69,8 +89,11 @@ const Login = () => {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
@@ -83,8 +106,11 @@ const Login = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   className="w-full h-12 pl-11 pr-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
@@ -106,8 +132,8 @@ const Login = () => {
               </button>
             </div>
 
-            <Button type="submit" variant="hero" size="lg" className="w-full">
-              Sign In
+            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
